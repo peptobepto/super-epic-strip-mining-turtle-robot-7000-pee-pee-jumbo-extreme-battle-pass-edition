@@ -1,1 +1,1 @@
-place to keep all the code for the strip mining turtle (computercraft mod)
+testing branch for strip mining program Im making using the computercraft mod
