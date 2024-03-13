@@ -1,10 +1,8 @@
--- TODO --
--- IMPLIMENT SYSTEM TO DETERMINE IF ITS GOTTEN A STACK OF DIAMONDS 
---IF IT HAS, RETURN BACK
---RETURN BACK BY KEEPING A TALLY OF HOW MANY BLOCKS ITS TRAVELED + 3 BLOCKS AND THEN HAVING IT DO A 180 AND GOING THAT DISTANCE BEFORE GOING UP UNTIL THE BLOCK IN FRONT OF IT IS GRASS, THEN UP ONE MORE BLOCK
---OK GOODNIGHT
-
-
+--TODO--
+--EVERYTHING WORKS SO FAR EXCEPT FOR THE COAL FUNCTION. I MAY INCRESE THE BLOCKS LEFT TO TRAVEL LIMIT AS 200 IS TOO SHORT. 1000 MAYBE?
+-- FIX COAL GETTING FUNCTION--
+--CONDUCT EXTENSIVE TESTING--
+--REAP THE REWARDS--
 
 local function detectOre()
     -- Check ore in front
@@ -17,6 +15,16 @@ local function detectOre()
             end
         end
     end
+    return false
+end
+
+local function detectGrass()
+    local success, block = turtle.inspect()
+    if success then
+            if block.name == "minecraft:grass_block" then
+                return true
+            end
+        end
     return false
 end
 
@@ -43,6 +51,23 @@ local function detectOreDown()
         end
     end
 end
+
+local function isdimon(itemDetail)
+    if itemDetail.name == "minecraft:diamond" then
+        return true
+    end
+    return false
+end
+local function goBack()
+    for slot = 1, 16 do
+        local itemDetail = turtle.getItemDetail(slot)
+        if itemDetail and itemDetail.name == "minecraft:diamond" and turtle.getItemCount(slot) == 64 then
+            return true
+        end
+    end
+    return false
+end
+
 
 local function mineVein()
     if detectOre() then
@@ -80,6 +105,11 @@ local function mineVein()
         turtle.up()
     end
 
+    if goBack() then 
+        return true
+
+    end
+    return false
 end
 
 
@@ -141,6 +171,7 @@ local function detectCoalUp()
             end
         end
     end
+    return false
 end
 local function mineCoal()
     if detectCoal() then
@@ -171,6 +202,14 @@ local function mineCoal()
         mineCoal()
         turtle.down()
     end
+    for i=1, 16 do
+        turtle.select(i)
+        if turtle.refuel(0) then
+            local count = turtle.getItemCount(i)
+            turtle.refuel(count)
+        end
+
+    end
 
 end
 local goodies = {"minecraft:diamond", "minecraft:redstone", "minecraft:dye", "minecraft:raw_gold", "minecraft:raw_iron", "minecraft:emerald", "minecraft:coal"}
@@ -185,6 +224,7 @@ local function isOre(itemDetail)
     return false
 end
 
+
 -- Function to drop non-ore items
 local function dropNonOres()
     for slot = 1, 16 do -- Assuming the turtle has 16 slots
@@ -197,8 +237,9 @@ local function dropNonOres()
         end
     end
 end
-
+local blocks = 0
 local function mine()
+blocks = blocks + 1
 turtle.dig()
 turtle.forward()
 if detectOre() or detectOreUp() == true then
@@ -226,9 +267,21 @@ if turtle.getFuelLevel() < 200 then
 
 
 end
-
-digdown()
-while true do 
-
-mine()
+function Main()
+    digdown()
+    while mineVein() == false do 
+    mine()
+    end
+    turtle.turnRight()
+    turtle.turnRight()
+    for i= 0, blocks do 
+        turtle.forward()
+    end
+    turtle.forward()
+    while detectGrass() == false do
+        turtle.up()
+    end
+    turtle.up()
 end
+
+Main()
