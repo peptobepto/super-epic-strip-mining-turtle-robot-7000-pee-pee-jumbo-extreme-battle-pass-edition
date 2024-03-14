@@ -52,21 +52,6 @@ local function detectOreDown()
     end
 end
 
-local function isdimon(itemDetail)
-    if itemDetail.name == "minecraft:diamond" then
-        return true
-    end
-    return false
-end
-local function goBack()
-    for slot = 1, 16 do
-        local itemDetail = turtle.getItemDetail(slot)
-        if itemDetail and itemDetail.name == "minecraft:diamond" and turtle.getItemCount(slot) == 64 then
-            return true
-        end
-    end
-    return false
-end
 
 
 local function mineVein()
@@ -105,11 +90,7 @@ local function mineVein()
         turtle.up()
     end
 
-    if goBack() then 
-        return true
 
-    end
-    return false
 end
 
 
@@ -147,71 +128,7 @@ local function digdown()
 
 end
 
-local function detectCoal()
-    -- Check ore in front
-    local success, block = turtle.inspect()
-    if success then
-        local oreList = {"minecraft:coal_ore"}
-        for _, ore in ipairs(oreList) do
-            if block.name == ore then
-                return true
-            end
-        end
-    end
-    return false
-end
 
-local function detectCoalUp()
-    success, block = turtle.inspectUp()
-    if success then
-        local oreList = {"minecraft:coal_ore"}
-        for _, ore in ipairs(oreList) do
-            if block.name == ore then
-                return true
-            end
-        end
-    end
-    return false
-end
-local function mineCoal()
-    if detectCoal() then
-      turtle.dig()
-      turtle.forward()
-      mineCoal()
-      turtle.back()
-    end
-    turtle.turnLeft()
-    if detectCoal() then
-        turtle.dig()
-        turtle.forward()
-        mineCoal()
-        turtle.back()
-    end
-    turtle.turnRight()
-    turtle.turnRight()
-    if detectCoal() then
-        turtle.dig()
-        turtle.forward()
-        mineCoal()
-        turtle.back()
-  end
-    turtle.turnLeft()
-    if detectCoalUp() then 
-        turtle.digUp()
-        turtle.up()
-        mineCoal()
-        turtle.down()
-    end
-    for i=1, 16 do
-        turtle.select(i)
-        if turtle.refuel(0) then
-            local count = turtle.getItemCount(i)
-            turtle.refuel(count)
-        end
-
-    end
-
-end
 local goodies = {"minecraft:diamond", "minecraft:redstone", "minecraft:dye", "minecraft:raw_gold", "minecraft:raw_iron", "minecraft:emerald", "minecraft:coal"}
 
 -- Function to check if an item is an ore
@@ -246,32 +163,10 @@ if detectOre() or detectOreUp() == true then
     turtle.select(1)
     dropNonOres()
     mineVein()
-    
 end
-if turtle.getFuelLevel() < 200 then
+end
+if turtle.getFuelLevel() <= blocks + 200 then
     print("WEE WOO WEE WOO")
-    for i=1, 100 do
-        turtle.digUp()
-        turtle.up()
-    end
-    while detectCoal() or detectCoalUp() == false do
-        turtle.dig()
-        turtle.forward()
-    end
-    mineCoal()
-    for i=1, 100 do
-        turtle.digDown()
-        turtle.down()
-    end
-    end
-
-
-end
-function Main()
-    digdown()
-    while mineVein() == false do 
-    mine()
-    end
     turtle.turnRight()
     turtle.turnRight()
     for i= 0, blocks do 
@@ -282,6 +177,53 @@ function Main()
         turtle.up()
     end
     turtle.up()
+    
+
+
 end
+local turnRightFlag = true -- Initialize a flag to track turning direction
+
+function Main()
+    digdown()
+    while mineVein() == false do 
+        if blocks % 304 == 0 then
+            if turnRightFlag then
+                turtle.turnRight()
+            else
+                turtle.turnLeft()
+            end
+            turtle.dig()
+            turtle.forward()
+            turtle.dig()
+            turtle.forward()
+            turtle.dig()
+            turtle.forward()
+            if turnRightFlag then
+                turtle.turnRight()
+            else
+                turtle.turnLeft()
+            end
+            if blocks ==2432 then
+                turtle.turnRight()
+                turtle.turnRight()
+            end
+        else
+            turnRightFlag = not turnRightFlag -- Toggle the flag for next iteration
+        end
+            
+        end
+        mine()
+    end
+    turtle.turnRight()
+    turtle.turnRight()
+    for i = 0, blocks do 
+        turtle.forward()
+    end
+    turtle.forward()
+    while detectGrass() == false do
+        turtle.up()
+    end
+    turtle.up()
+
 
 Main()
